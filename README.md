@@ -21,7 +21,8 @@ dht.h, dht.c: libreria per la gestione e la lettura del sensore di temperatura e
 timeinterval.c, timeinterval.h: libreria per la gestione degli intervalli temporali.
 
 ## installazione:
-lanciare il comando make flash dopo la configurazione dell'ambiente di sviluppo ESP8266 RTOS SDK
+inserire ssid e wifi password nel file main.c per connettere il termostato al wifi.
+lanciare il comando make flash per compilare il sorgente e flashare la board dopo la configurazione dell'ambiente di sviluppo ESP8266 RTOS SDK. 
 https://docs.espressif.com/projects/esp8266-rtos-sdk/en/latest/get-started/
 
  
