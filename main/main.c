@@ -24,10 +24,17 @@
 #include "dht.h"
 #include "timeinterval.h"
 
-#define EXAMPLE_ESP_WIFI_SSID      "my-wifi"
+/*definizione macro per wifi*/
+
+#define EXAMPLE_ESP_WIFI_SSID      "mywifi"
 #define EXAMPLE_ESP_WIFI_PASS      "qwerty"
 #define EXAMPLE_ESP_MAXIMUM_RETRY  CONFIG_ESP_MAXIMUM_RETRY
+
+/*definizione macro per mqtt*/
+
 #define CONFIG_BROKER_URL   "mqtt://atrent.it"
+#define MQTT_COMMAND_SUBSCRIBE_TOPIC "tamba/test/comandi"
+#define MQTT_DATA_PUBLISH_TOPIC "tamba/test/dati"
 
 /*definizione dei gpio*/
 
@@ -175,7 +182,7 @@ static void connection_event_manager_task(void *arg)
         {
             ESP_LOGI(TAG, "mqtt client connected to broker");
             node_online = true;
-            esp_mqtt_client_subscribe(mqtt_client, "tamba/test/comandi", 0); //sottoscrizione del topic pree i comandi
+            esp_mqtt_client_subscribe(mqtt_client, MQTT_COMMAND_SUBSCRIBE_TOPIC, 0); //sottoscrizione del topic pree i comandi
             vTaskResume(mqtt_publish_json_task_handler);    //attivazione del publisher mqtt
             vTaskSuspend(led_builtin_blinker_task_handler); //sospensione lampeggio led builtin 
             gpio_set_level(LED_BUILTIN, 1); //spegnimento del led builtin attivo basso
@@ -351,7 +358,7 @@ static void mqtt_publish_json_task(void *arg)
             }
 
             rendered = cJSON_Print(root);   //stringify dell'oggetto json
-            esp_mqtt_client_publish(mqtt_client, "tamba/test/dati", rendered, strlen(rendered), 0, 0);  //pubblicazione messaggio mqtt
+            esp_mqtt_client_publish(mqtt_client, MQTT_DATA_PUBLISH_TOPIC, rendered, strlen(rendered), 0, 0);  //pubblicazione messaggio mqtt
             cJSON_Delete(root);
             root = NULL;
             free(rendered);
@@ -778,7 +785,7 @@ void mqtt_client_setup(void)
     esp_mqtt_client_config_t mqtt_cfg = {
         .uri = CONFIG_BROKER_URL,
         .lwt_msg = rendered, 
-        .lwt_topic = "tamba/test/dati", //last will topic
+        .lwt_topic = MQTT_DATA_PUBLISH_TOPIC, //last will topic
         .lwt_qos = 0,  
     };
     cJSON_Delete(root);

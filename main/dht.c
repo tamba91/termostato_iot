@@ -37,7 +37,7 @@ static void IRAM_ATTR _dht_isr_handler(void *arg)
         --_dht_serial_bit_number;
         return;
     }
-    else if (interval >= _DHT_ONE_BIT_MIN_INTERVAL_RANGE && interval <= _DHT_ONE_BIT_MAX_INTERVAL_RANGE) //ricebuto 1
+    else if (interval >= _DHT_ONE_BIT_MIN_INTERVAL_RANGE && interval <= _DHT_ONE_BIT_MAX_INTERVAL_RANGE) //ricevuto 1
     {
         _dht_buffer[_dht_serial_bit_number >> 5] |= 1 << (_dht_serial_bit_number & 31); //equivale a /32 e %32
         --_dht_serial_bit_number;
