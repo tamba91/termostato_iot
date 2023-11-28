@@ -14,7 +14,7 @@ static bool _dht_configuration_done = false;
 static volatile uint32_t _dht_prev_interrupt_time;
 static volatile int32_t _dht_serial_bit_number;
 static volatile uint32_t _dht_buffer[2];
-static const char *_dht_tag = "dht_lib: ";
+static const char *_dht_tag = "DHT_LIB: ";
 
 /*funzione che azzera il buffer di ricezione*/
 
@@ -116,19 +116,24 @@ bool dht_measure(double *temp, double *humi)
         vTaskDelay(_dht_safe_delay_ms_configured);
 
     _dht_clean_buffer();
-    gpio_set_level(_dht_gpio_configured, 0);
+    gpio_set_level(_dht_gpio_configured, 0);        //linea dati bassa per svegliare il sensore
     vTaskDelay(_dht_wakeup_pulldown_time_ms_configured);
-    _dht_serial_bit_number = 63;
+    _dht_serial_bit_number = 63;        //contatore bit in arrivo inizializzato a 63, ultimo bit dell'ultimo byte del buffer di 64 bit
     gpio_set_direction(_dht_gpio_configured, GPIO_MODE_INPUT);
-    gpio_set_pull_mode(_dht_gpio_configured, GPIO_PULLUP_ONLY);
-    gpio_set_intr_type(_dht_gpio_configured, GPIO_INTR_NEGEDGE);
-    gpio_isr_handler_add(_dht_gpio_configured, _dht_isr_handler, (void *)1);
-    _dht_prev_interrupt_time = (uint32_t)esp_timer_get_time();
-    vTaskDelay(10 / portTICK_PERIOD_MS);
-    gpio_isr_handler_remove(_dht_gpio_configured);
-    gpio_set_direction(_dht_gpio_configured, GPIO_MODE_OUTPUT);
+    gpio_set_pull_mode(_dht_gpio_configured, GPIO_PULLUP_ONLY);     // pull up e attesa di risposta sulla linea dati
+    gpio_set_intr_type(_dht_gpio_configured, GPIO_INTR_NEGEDGE);    //interrupt falling su linea dati
+    gpio_isr_handler_add(_dht_gpio_configured, _dht_isr_handler, (void *)1);    //attach della funzione di interrupt sulla linea dati
+    _dht_prev_interrupt_time = (uint32_t)esp_timer_get_time();  //campionamento tempo attuale
+    vTaskDelay(10 / portTICK_PERIOD_MS);    //delay minimo, al termine del delay la trasmissione è sicuramente conclusa
+    gpio_isr_handler_remove(_dht_gpio_configured);  //detach della funzione di interrupt
+    gpio_set_direction(_dht_gpio_configured, GPIO_MODE_OUTPUT); //ripristino della condizione di sleep per il sensore dht
     gpio_set_level(_dht_gpio_configured, 1);
-    if (_dht_serial_bit_number == 23 && ((*(buffer_byte_pointer + 3)) == (*(buffer_byte_pointer + 4)) + (*(buffer_byte_pointer + 5)) + (*(buffer_byte_pointer + 6)) + (*(buffer_byte_pointer + 7))))
+    
+    //calcolo della checksum, 
+    //se la checksum è corretta vengono aggiornate le variabili di umidità e temperatura e ritorna true
+    //altrimenti ritorna false
+
+    if (_dht_serial_bit_number == 23 && ((*(buffer_byte_pointer + 3)) == (uint8_t)((*(buffer_byte_pointer + 4)) + (*(buffer_byte_pointer + 5)) + (*(buffer_byte_pointer + 6)) + (*(buffer_byte_pointer + 7)))))
     {
         if (_dht_sensor_type_configured == DHT_11)
         {
@@ -148,7 +153,5 @@ bool dht_measure(double *temp, double *humi)
         return true;
     }
     else
-    {
         return false;
-    }
 }

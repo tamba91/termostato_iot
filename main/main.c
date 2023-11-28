@@ -26,8 +26,8 @@
 
 /*definizione macro per wifi*/
 
-#define EXAMPLE_ESP_WIFI_SSID      "mywifi"
-#define EXAMPLE_ESP_WIFI_PASS      "qwerty"
+#define EXAMPLE_ESP_WIFI_SSID      "sistembed"
+#define EXAMPLE_ESP_WIFI_PASS      "lastessa"
 #define EXAMPLE_ESP_MAXIMUM_RETRY  CONFIG_ESP_MAXIMUM_RETRY
 
 /*definizione macro per mqtt*/
@@ -43,6 +43,8 @@
 
 #define RELAY GPIO_NUM_4
 #define RELAY_MASK GPIO_Pin_4
+
+#define DHT_GPIO GPIO_NUM_5
 
 /*definizione estremi per valori di temperatura in gradi centigradi*/
 
@@ -766,8 +768,8 @@ void gpio_setup(void)
 void dht_setup(void)
 {
     dht_config_t dht_conf;
-    dht_conf.dht_gpio = GPIO_NUM_5;
-    dht_conf.dht_type = DHT_11;
+    dht_conf.dht_gpio = DHT_GPIO;
+    dht_conf.dht_type = DHT_22;
     dht_conf.safe_mode = true;
 
     dht_config(&dht_conf);
@@ -793,7 +795,7 @@ void mqtt_client_setup(void)
     esp_mqtt_client_register_event(mqtt_client, ESP_EVENT_ANY_ID, mqtt_client_event_handler, mqtt_client);   
 }
 
-//inizializzazione della struttura dati che memorizza la prgrammazione settimanale
+//inizializzazione della struttura dati che memorizza la programmazione settimanale
 void week_prog_setup(void)
 {
     for(int i=0; i<DAYS_PER_WEEK; i++)
