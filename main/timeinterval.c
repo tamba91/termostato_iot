@@ -27,6 +27,7 @@ bool insert_into_interval_array(daytime_interval_sec_t arr[], const char *start_
     if(interval_to_insert.end_sec == 0)
         interval_to_insert.end_sec = SECONDS_PER_DAY;
 
+    //verifica validità intervallo temporale
     if (interval_to_insert.start_sec >= 0 && interval_to_insert.start_sec < SECONDS_PER_DAY && interval_to_insert.end_sec > 0 && interval_to_insert.end_sec <= SECONDS_PER_DAY && interval_to_insert.start_sec < interval_to_insert.end_sec)
     {
         int index = 0;
@@ -36,6 +37,7 @@ bool insert_into_interval_array(daytime_interval_sec_t arr[], const char *start_
         if(index == size)
             return false;
 
+        //inserimento in fondo all'array
         if (IS_FREE_BOX(arr[index]))
         {
             arr[index].start_sec = interval_to_insert.start_sec;
@@ -43,9 +45,11 @@ bool insert_into_interval_array(daytime_interval_sec_t arr[], const char *start_
             return true;
         }
 
+        //intervallo interamente compreso in un intervallo già persente
         else if (!(IS_FREE_BOX(arr[index])) && interval_to_insert.start_sec >= arr[index].start_sec && interval_to_insert.end_sec <= arr[index].end_sec)
             return true;
 
+        //inserimento di un intervallo tra 2 intervalli gia presenti, senza sovrapposizioni
         else if (!(IS_FREE_BOX(arr[index])) && (interval_to_insert.end_sec < arr[index].start_sec) && (IS_FREE_BOX(arr[size - 1])))
         {
             for (int i = size - 2; i >= index; i--)
@@ -59,6 +63,7 @@ bool insert_into_interval_array(daytime_interval_sec_t arr[], const char *start_
             return true;
         }
 
+        //inserimento di un intervallo che si sovrappone parzialmente a intervalli esistenti
         else if (!(IS_FREE_BOX(arr[index])) && interval_to_insert.end_sec >= arr[index].start_sec)
         {
             if (interval_to_insert.start_sec < arr[index].start_sec)
