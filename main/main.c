@@ -386,37 +386,21 @@ static void thermo_task()
         localtime_r(&raw, &current_time_struct);
 
         /*
-        caso con programmazione oraria settimanale attiva, verifica se l'ora corrente è compresa in un intervallo di programmazione
-        e se la temperatura corrrente è inferiore alla temperatura desiderata
+        verifica se l'ora corrente è compresa in un intervallo di programmazione o se la programmazione oraria è disattivata
+        e se la temperatura corrente è inferiore alla temperatura desiderata, se necessario accende il riscaldamento
         */
 
-        if(main_switch == true && prog_switch == true && time_in_interval(&current_time_struct, week_prog[current_time_struct.tm_wday], TIME_INTERVALS_PER_DAY) && current_temp < target_temp)
+        if(main_switch == true && ((prog_switch == true && time_in_interval(&current_time_struct, week_prog[current_time_struct.tm_wday], TIME_INTERVALS_PER_DAY)) || prog_switch == false) && current_temp < target_temp)
         {
             gpio_set_level(RELAY, 1);
             thermo_on = true;
             xEventGroupSetBits(global_variable_update_group, THERMO_STATUS_UPDATE_BIT_PUBLISHER_TASK);
         }
 
-        /*
-        caso con programmazione oraria settimanale disattivata, verifica solo se la temperatura corrrente è inferiore alla temperatura 
-        desiderata
-        */
+        //raggiungimento della temperatura desiderata più il delta
 
-        else if(main_switch == true && prog_switch == false && current_temp < target_temp)
-        {
-            gpio_set_level(RELAY, 1);
-            thermo_on = true;
-            xEventGroupSetBits(global_variable_update_group, THERMO_STATUS_UPDATE_BIT_PUBLISHER_TASK);
-        }
+        else if(main_switch == true && ((prog_switch == true && time_in_interval(&current_time_struct, week_prog[current_time_struct.tm_wday], TIME_INTERVALS_PER_DAY)) || prog_switch == false) && thermo_on == true && current_temp <= (target_temp + delta_temp));
 
-        //raggiungimento della temperatura desiderata più il delta (programmazione temporale attiva)
-
-        else if(main_switch == true && prog_switch == true && time_in_interval(&current_time_struct, week_prog[current_time_struct.tm_wday], TIME_INTERVALS_PER_DAY) && thermo_on == true && current_temp <= (target_temp + delta_temp));
-
-        //raggiungimento della temperatura desiderata più il delta (programmazione temporale non attiva)
-
-        else if(main_switch == true && prog_switch == false && thermo_on == true && current_temp <= (target_temp + delta_temp));
-        
         //sotto la temperatura di base il riscaldamento parte comunque
 
         else if(current_temp < base_temp)   
