@@ -110,7 +110,7 @@ bool dht_measure(double *temp, double *humi)
         return false;
     }
 
-    const char *buffer_byte_pointer = (char *)_dht_buffer;
+    char *buffer_byte_pointer = (char *)_dht_buffer;
 
     if (_dht_safe_mode_configured)
         vTaskDelay(_dht_safe_delay_ms_configured);
@@ -147,8 +147,12 @@ bool dht_measure(double *temp, double *humi)
         {
             if (humi)
                 *humi = (double)(*((int16_t *)(buffer_byte_pointer + 6))) / 10.0;
-            if (temp)
-                *temp = (double)(*((int16_t *)(buffer_byte_pointer + 4))) / 10.0;
+            if (temp) {
+                bool neg = (bool)((*(buffer_byte_pointer + 5)) & BIT7);
+                *(buffer_byte_pointer + 5) &= ~BIT7;
+                *temp = neg ? -((double)(*((int16_t *)(buffer_byte_pointer + 4))) / 10.0) : (double)(*((int16_t *)(buffer_byte_pointer + 4))) / 10.0;             
+            }
+                
         }
         return true;
     }
