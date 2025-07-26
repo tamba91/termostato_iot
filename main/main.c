@@ -32,7 +32,7 @@
 
 /*definizione macro per mqtt*/
 
-#define CONFIG_BROKER_URL   "mqtt://atrent.it"
+#define CONFIG_BROKER_URL   "mqtt://server.test"
 #define MQTT_COMMAND_SUBSCRIBE_TOPIC "tamba/test/comandi"
 #define MQTT_DATA_PUBLISH_TOPIC "tamba/test/dati"
 
